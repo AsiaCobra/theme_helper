@@ -194,15 +194,15 @@ class Theme_Helper {
         //Start Home Block Control in Theme Options
             $blockForm = array( 
                 array(),
-                array('main_title'=>'text','main_description'=>'textarea','item_title'=>'text','item_description'=>'textarea','plus_btn'=>'button','minus_btn'=>'button'),
+                array('main_title'=>'text','main_description'=>'textarea','item_title'=>'text','item_description'=>'textarea','item_loop'=>3,'loop_items'=>array('item_title,item_description') ),
                 array('main_title'=>'text','post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
                 array('main_title'=>'text','post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
                 array('main_title'=>'text','post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
                 array('main_title'=>'text','main_description'=>'textarea','post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
                 array('main_title'=>'text','main_description'=>'textarea','comment_limit'=>'number','comment_img'=>'image',
                     'post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
-                array('main_title'=>'text','main_description'=>'textarea','item_title'=>'text','item_description'=>'textarea'),
-                array('main_title'=>'text','main_description'=>'textarea','partner'=>'image'),
+                array('main_title'=>'text','main_description'=>'textarea','item_title'=>'text','item_description'=>'textarea','item_loop'=>6, 'loop_items'=>  array('item_title,item_description') ) ,
+                array('main_title'=>'text','main_description'=>'textarea','partner'=>'image','item_loop'=>6,'loop_items'=>array('partner')),
                 // array('main_title'=>'text','main_description'=>'textarea','partner'=>'image'),
                 // array('main_title'=>'text','main_description'=>'textarea','partner'=>'image'),
             );
@@ -237,83 +237,92 @@ class Theme_Helper {
                             'label'=> __( $label, "habakiri" ), 
                             // 'default'=>count($blockForm[$i]),
                             "section" =>$section_id,
-                        );
-                        if( $type === 'button' ){
-                            
+                        ); 
 
-                            
-                            $wp_customize->add_control( $field_id, array(
-                                'type' => 'button',
-                                'settings' => array(), // 👈
-                                'priority' => 10,
-                                'section' => $section_id,
-                                'input_attrs' => array(
-                                    'value' => __( $label, 'textdomain' ), // 👈
-                                    'class' => 'button button-primary '. $block_id, // 👈
-                                ),
-                              
-                            ) );
-                            // $this->button( $field_id, $field_Ary );
-                        }
-                        if( $type === 'text' ){
-                            $this->Customizer_Framework->text( $field_id, $field_Ary );
-                        }
+                        if( $block_id === 'item_loop' ){
 
-                        if ( $type === 'textarea' ){
-                            $this->Customizer_Framework->textarea($field_id, $field_Ary);
-                        }
+                            for ( $b = 1; $b <= $type; $b++ ){
 
-                        if ( $type === 'number' ){
-                            $field_Ary['default'] = -1;
-                            self::$defaults[$field_id] = -1;
-                            $this->Customizer_Framework->number( $field_id, $field_Ary );
-                        }
+                                $loop_items = $blockForm[$i]['loop_items'];
 
-                        if ( $type === 'select' ){
-                            
-                            $post_types = self::get_post_types() ;
-                            $post_categories = self::get_post_categories() ;
-                            $post_order = self::get_post_order() ;
-                            $post_orderBy = self::get_post_orderBy() ;
+                                for ( $l = 0; $l < count( $blockForm[$i]['loop_items'] ); $l++ ){
 
-                            $field_Ary['choices'] = array(
-                                'dd' => __("Hello","habakiri"),
-                                'tt' => __("TT","habakiri"),
-                                'aa' => __("AA","habakiri"),
-                            );
+                                    $type = $blockForm[$i]$loop_items[$l];
 
-                            if( $block_id === 'post_type' ){
-                                $field_Ary['choices'] = $post_types;
-                            }
-                            if( $block_id === 'post_categories' ){
-                                $field_Ary['choices'] = $post_categories;
-                            }
-                            if( $block_id === 'post_order' ){
-                                $field_Ary['choices'] = $post_order;
-                            }
-                            if( $block_id === 'post_orderby' ){
-                                $field_Ary['choices'] = $post_orderBy;
+                                    $field_id = $home_block_id.$loop_items[$l]"_${l}";
+                                    $this->check_type( $type, $field_id, $field_Ary );
+                                }
                             }
 
-
-                            $first_key = array_key_first( $field_Ary['choices'] );
-                            $field_Ary['default']= $field_Ary['choices'][$first_key];
-
-
-
-
-                            $this->Customizer_Framework->select( $field_id, $field_Ary );
+                        } else {
+                            $this->check_type( $type, $field_id, $field_Ary );
                         }
 
-                        if( $type == "image" ){
-                            $this->Customizer_Framework->image( $field_id, $field_Ary );
-                        }
+
+
+                        
                     }
                 
             }
         //End Home Block Control Options
 
 
+    }
+
+    public function check_type( $type, $field_id, $field_Ary){
+        if( $type === 'text' ){
+            $this->Customizer_Framework->text( $field_id, $field_Ary );
+        }
+
+        if ( $type === 'textarea' ){
+            $this->Customizer_Framework->textarea($field_id, $field_Ary);
+        }
+
+        if ( $type === 'number' ){
+            $field_Ary['default'] = -1;
+            self::$defaults[$field_id] = -1;
+            $this->Customizer_Framework->number( $field_id, $field_Ary );
+        }
+
+        if ( $type === 'select' ){
+            
+            $post_types = self::get_post_types() ;
+            $post_categories = self::get_post_categories() ;
+            $post_order = self::get_post_order() ;
+            $post_orderBy = self::get_post_orderBy() ;
+
+            $field_Ary['choices'] = array(
+                'dd' => __("Hello","habakiri"),
+                'tt' => __("TT","habakiri"),
+                'aa' => __("AA","habakiri"),
+            );
+
+            if( $block_id === 'post_type' ){
+                $field_Ary['choices'] = $post_types;
+            }
+            if( $block_id === 'post_categories' ){
+                $field_Ary['choices'] = $post_categories;
+            }
+            if( $block_id === 'post_order' ){
+                $field_Ary['choices'] = $post_order;
+            }
+            if( $block_id === 'post_orderby' ){
+                $field_Ary['choices'] = $post_orderBy;
+            }
+
+
+            $first_key = array_key_first( $field_Ary['choices'] );
+            $field_Ary['default']= $field_Ary['choices'][$first_key];
+
+
+
+
+            $this->Customizer_Framework->select( $field_id, $field_Ary );
+        }
+
+        if( $type == "image" ){
+            $this->Customizer_Framework->image( $field_id, $field_Ary );
+        }
     }
     public function button( $control_id, $args ){
 
