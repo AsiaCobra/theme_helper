@@ -245,12 +245,12 @@ class Theme_Helper {
 
                                 $loop_items = $blockForm[$i]['loop_items'];
 
-                                for ( $l = 0; $l < count( $blockForm[$i]['loop_items'] ); $l++ ){
+                                for ( $l = 0; $l < count( $loop_items ); $l++ ){
 
-                                    $type = $blockForm[$i]$loop_items[$l];
+                                    $type2 = $blockForm[$i].$loop_items[$l];
 
-                                    $field_id = $home_block_id.$loop_items[$l]"_${l}";
-                                    $this->check_type( $type, $field_id, $field_Ary );
+                                    $field_id = $home_block_id.$loop_items[$l]."_${l}";
+                                    $this->check_type( $type2, $field_id, $field_Ary );
                                 }
                             }
 
