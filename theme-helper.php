@@ -229,39 +229,39 @@ class Theme_Helper {
                 ) );
 
                 
-                    foreach ( $blockForm[$i] as $block_id=>$type ){
+                    // foreach ( $blockForm[$i] as $block_id=>$type ){
 
-                        $field_id = $home_block_id."_".$block_id;
-                        $label = ucfirst( str_replace( "_", " ", $block_id ) );
-                        $field_Ary = array( 
-                            'label'=> __( $label, "habakiri" ), 
-                            // 'default'=>count($blockForm[$i]),
-                            "section" =>$section_id,
-                        ); 
+                    //     $field_id = $home_block_id."_".$block_id;
+                    //     $label = ucfirst( str_replace( "_", " ", $block_id ) );
+                    //     $field_Ary = array( 
+                    //         'label'=> __( $label, "habakiri" ), 
+                    //         // 'default'=>count($blockForm[$i]),
+                    //         "section" =>$section_id,
+                    //     ); 
 
-                        if( $block_id === 'item_loop' ){
+                    //     if( $block_id === 'item_loop' ){
 
-                            for ( $b = 1; $b <= $type; $b++ ){
+                    //         for ( $b = 1; $b <= $type; $b++ ){
 
-                                $loop_items = $blockForm[$i]['loop_items'];
+                    //             $loop_items = $blockForm[$i]['loop_items'];
 
-                                for ( $l = 0; $l < count( $loop_items ); $l++ ){
+                    //             for ( $l = 0; $l < count( $loop_items ); $l++ ){
 
-                                    $type2 = $blockForm[$i].$loop_items[$l];
+                    //                 $type2 = $blockForm[$i].$loop_items[$l];
 
-                                    $field_id = $home_block_id.$loop_items[$l]."_${l}";
-                                    $this->check_type( $type2, $field_id, $field_Ary );
-                                }
-                            }
+                    //                 $field_id = $home_block_id.$loop_items[$l]."_${l}";
+                    //                 $this->check_type( $type2, $field_id, $field_Ary );
+                    //             }
+                    //         }
 
-                        } else {
+                    //     } else {
                             $this->check_type( $type, $field_id, $field_Ary );
-                        }
+                    //     }
 
 
 
                         
-                    }
+                    // }
                 
             }
         //End Home Block Control Options
@@ -378,7 +378,7 @@ class Theme_Helper {
             // Features this CPT supports in Post Editor
             'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'revisions', 'custom-fields', ),
             // You can associate this CPT with a taxonomy or custom taxonomy. 
-            'taxonomies'          => array( "genres"),
+            'taxonomies'          => array( $slug ),
             /* A hierarchical CPT is like Pages and can have
             * Parent and child items. A non-hierarchical CPT
             * is like Posts.
@@ -560,18 +560,18 @@ class Theme_Helper {
     }
 }
 
-function Child_Customizer_Class(){	
+// function Child_Customizer_Class(){	
 
-    if ( class_exists( "Habakiri_Customizer_Framework" ) ){
+//     if ( class_exists( "Habakiri_Customizer_Framework" ) ){
 
-        $child_customizer = new Theme_Helper;
+//         $child_customizer = new Theme_Helper;
     
-        add_action( 'customize_register', array( $child_customizer, 'customize_register') );
-        add_action( 'init', array( $child_customizer, 'custom_post_type') );
-        add_action( 'customize_controls_print_footer_scripts', array( $child_customizer, 'customizer_js') );
-    }
+//         add_action( 'customize_register', array( $child_customizer, 'customize_register') );
+//         add_action( 'init', array( $child_customizer, 'custom_post_type') );
+//         add_action( 'customize_controls_print_footer_scripts', array( $child_customizer, 'customizer_js') );
+//     }
 
-}
-add_action("after_setup_theme","Child_Customizer_Class");
+// }
+// add_action("after_setup_theme","Child_Customizer_Class");
 
  
