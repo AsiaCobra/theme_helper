@@ -1,4 +1,7 @@
 <?php
+if ( class_exists( "Habakiri_Customizer_Framework" ) ){
+    require('habakiri-customizer-framework.php');
+}
 class Theme_Helper {
 
 	/**
@@ -6,6 +9,7 @@ class Theme_Helper {
 	 * @var array
 	 */
     protected static $defaults = array();
+    protected $remove_field = array();
 
     /**
 	 * @var Habakiri_Customizer_Framework
@@ -71,7 +75,7 @@ class Theme_Helper {
 
         $this->Customizer_Framework->register_customizer( $wp_customize );
 
-        //Start Parent Theme Slider Modify 
+            //Start Parent Theme Slider Modify 
             for ( $i = 1; $i <= 5; $i ++ ) {
                 $section_id = 'habakiri_slider_image_' . $i;
 
@@ -100,9 +104,9 @@ class Theme_Helper {
                 
             
             }
-        //End Parent Theme Slider Modify
+            //End Parent Theme Slider Modify
 
-        //Start Theme Options
+            //Start Theme Options
             $panel_id = "child_theme_options"; 
             $this->Customizer_Framework->add_panel( $panel_id, array(
                 'title'         => __( " Theme Options ", ' habakiri ' ),
@@ -192,9 +196,9 @@ class Theme_Helper {
         //End Theme Options
 
         //Start Home Block Control in Theme Options
-            $blockForm = array( 
-                array(),
-                array('main_title'=>'text','main_description'=>'textarea','item_title'=>'text','item_description'=>'textarea','item_loop'=>3,'loop_items'=>array('item_title,item_description') ),
+            $create_blog_form = array(  
+                array('main_title'=>'text','main_description'=>'textarea','item_title'=>'text','item_description'=>'textarea',
+                'item_loop'=>3,'loop_items'=>array('item_title,item_description') ),
                 array('main_title'=>'text','post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
                 array('main_title'=>'text','post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
                 array('main_title'=>'text','post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
@@ -203,19 +207,22 @@ class Theme_Helper {
                     'post_type'=>'select','post_categories'=>'select','post_order'=>'select','post_orderby'=>'select','post_limit'=> 'number'),
                 array('main_title'=>'text','main_description'=>'textarea','item_title'=>'text','item_description'=>'textarea','item_loop'=>6, 'loop_items'=>  array('item_title,item_description') ) ,
                 array('main_title'=>'text','main_description'=>'textarea','partner'=>'image','item_loop'=>6,'loop_items'=>array('partner')),
-                // array('main_title'=>'text','main_description'=>'textarea','partner'=>'image'),
-                // array('main_title'=>'text','main_description'=>'textarea','partner'=>'image'),
+
             );
+            $blockForm = apply_filters('custom_blog_form',$create_blog_form);
 
-            $blocks = self::get_home_blocks();
+            $blocks = sizeof($blockForm);
+            // self::$home_blocks = sizeof($blockForm);
+            // $blocks = apply_filters('home_block_length',self::$home_blocks);
 
-            for ( $i = 1; $i <= $blocks; $i++ ) {
-
-                $section_id = "home_block_control_$i";
-                $home_block_id = "home_block_$i";
+            $tmp_index = 0;
+            for ( $i = 0; $i < $blocks; $i++ ) {
+                $tmp_index++;
+                $section_id = "home_block_control_$tmp_index";
+                $home_block_id = "home_block_$tmp_index";
 
                 $main_title = get_theme_mod ( $home_block_id."_main_title" );
-                $section_label = $main_title ? $main_title : " Manage Home Block $i ";
+                $section_label = $main_title ? $main_title : " Manage Home Block $tmp_index ";
 
                 $this->Customizer_Framework->add_section( $section_id, array(
                     'title'         => __( $section_label, 'habakiri' ),
@@ -224,44 +231,41 @@ class Theme_Helper {
 
                 
                 $this->Customizer_Framework->checkbox( $home_block_id, array(
-                    'label'     => __( " Hide  Home Block $i ", 'habakiri' ),
+                    'label'     => __( " Hide  Home Block $tmp_index ", 'habakiri' ),
                     'section'   => $section_id
                 ) );
 
-                
-                    // foreach ( $blockForm[$i] as $block_id=>$type ){
+                if( $blockForm[$i] ){
 
-                    //     $field_id = $home_block_id."_".$block_id;
-                    //     $label = ucfirst( str_replace( "_", " ", $block_id ) );
-                    //     $field_Ary = array( 
-                    //         'label'=> __( $label, "habakiri" ), 
-                    //         // 'default'=>count($blockForm[$i]),
-                    //         "section" =>$section_id,
-                    //     ); 
+                    foreach ( $blockForm[$i] as $block_id=>$type ){
+                        $field_id = $home_block_id."_".$block_id;
+                        $label = ucfirst( str_replace( "_", " ", $block_id ) );
+                        $field_Ary = array( 
+                            'label'=> __( $label, "habakiri" ), 
+                            // 'default'=>count($blockForm[$i]),
+                            "section" =>$section_id,
+                        ); 
+                        if( $block_id === 'item_loop' ){
+                            
+                            for ( $b = 1; $b <= $type; $b++ ){
+                                // loop items array
+                                $loop_items = $blockForm[$i]['loop_items'];
+                                for ( $l = 0; $l < sizeof($loop_items); $l++ ){
+                                    // clone item type
+                                    $type2 = $blockForm[$i][$loop_items[$l]];
+                                    // loop field_id 
+                                    $field_id = $home_block_id."_".$loop_items[$l]."_${b}";
+                                    // loop label name 
+                                    $field_Ary['label'] = ucfirst( str_replace("_"," ",$loop_items[$l]) )." ".$b;
+                                    $this->check_type( $type2, $block_id, $field_id, $field_Ary );
+                                }
+                            }
+                        } else {
 
-                    //     if( $block_id === 'item_loop' ){
-
-                    //         for ( $b = 1; $b <= $type; $b++ ){
-
-                    //             $loop_items = $blockForm[$i]['loop_items'];
-
-                    //             for ( $l = 0; $l < count( $loop_items ); $l++ ){
-
-                    //                 $type2 = $blockForm[$i].$loop_items[$l];
-
-                    //                 $field_id = $home_block_id.$loop_items[$l]."_${l}";
-                    //                 $this->check_type( $type2, $field_id, $field_Ary );
-                    //             }
-                    //         }
-
-                    //     } else {
-                            $this->check_type( $type, $field_id, $field_Ary );
-                    //     }
-
-
-
-                        
-                    // }
+                            $this->check_type( $type, $block_id, $field_id, $field_Ary );
+                        }
+                    }
+                }
                 
             }
         //End Home Block Control Options
@@ -269,7 +273,7 @@ class Theme_Helper {
 
     }
 
-    public function check_type( $type, $field_id, $field_Ary){
+    public function check_type( $type, $block_id, $field_id, $field_Ary){
         if( $type === 'text' ){
             $this->Customizer_Framework->text( $field_id, $field_Ary );
         }
@@ -282,6 +286,14 @@ class Theme_Helper {
             $field_Ary['default'] = -1;
             self::$defaults[$field_id] = -1;
             $this->Customizer_Framework->number( $field_id, $field_Ary );
+        }
+        if ( $type === 'check' ){
+   
+            $this->Customizer_Framework->checkbox( $field_id, $field_Ary );
+        }
+        if ( $type === 'email' ){
+   
+            $this->Customizer_Framework->email( $field_id, $field_Ary );
         }
 
         if ( $type === 'select' ){
@@ -309,7 +321,6 @@ class Theme_Helper {
             if( $block_id === 'post_orderby' ){
                 $field_Ary['choices'] = $post_orderBy;
             }
-
 
             $first_key = array_key_first( $field_Ary['choices'] );
             $field_Ary['default']= $field_Ary['choices'][$first_key];
@@ -398,20 +409,21 @@ class Theme_Helper {
         );
 
         // Registering your Custom Post Type
-        register_post_type( $name, $args );
-
+        register_post_type( $slug, $args );
+        $cat_name = $name ."Categories";
+        $cat_name = apply_filters('custom_cat_name',$name);
         $tax_labels = array(
-            'name' => _x( $name." Categories ", 'taxonomy general name' ),
+            'name' => _x( $cat_name, 'taxonomy general name' ),
             'singular_name' => _x( $tax, 'taxonomy singular name' ),
-            'search_items' =>  __( 'Search '.$name.' Categories' ),
-            'all_items' => __( 'All '.$name.' Categories' ),
-            'parent_item' => __( 'Parent '.$name.' Categories' ),
-            'parent_item_colon' => __( 'Parent '.$name.' Categories:' ),
-            'edit_item' => __( 'Edit '.$name.' Categories' ), 
-            'update_item' => __( 'Update '.$name.' Categories' ),
-            'add_new_item' => __( 'Add New '.$name.' Categories' ),
-            'new_item_name' => __( 'New '.$name.' Categories Name' ),
-            'menu_name' => __( $name.' Categories' ),
+            'search_items' =>  __( 'Search '.$cat_name ),
+            'all_items' => __( 'All '.$cat_name),
+            'parent_item' => __( 'Parent '.$cat_name),
+            'parent_item_colon' => __( 'Parent '.$cat_name ),
+            'edit_item' => __( 'Edit '.$cat_name), 
+            'update_item' => __( 'Update '.$cat_name),
+            'add_new_item' => __( 'Add New '.$cat_name),
+            'new_item_name' => __( 'New '.$cat_name ),
+            'menu_name' => __( $cat_name),
           );    
          
         // Now register the taxonomy
@@ -428,7 +440,7 @@ class Theme_Helper {
 
     public static function get_home_blocks(){
 
-        self::$home_blocks = apply_filters('home_blocks', 8 );
+        self::$home_blocks = apply_filters('home_blocks_length', 8 );
 
         if ( self::$home_blocks > 0 ){
 
@@ -492,13 +504,13 @@ class Theme_Helper {
     public static function get_custom_post_with_tax ( $name ) {
         if ( !$name )
             return false;
-
-        $with_tax = apply_filters('custom_post_tax', 
+        $name = apply_filters('post_type_name',$name);
+        $with_tax = apply_filters('custom_post_type_tax', 
         array(
             'post_name'     => ucfirst( $name ),
             'post_slug'     => strtolower( str_replace( ' ', '-', $name ) ),
             'tax_name'      =>strtolower( str_replace( ' ', '_', $name ) ).'_cat',
-        ) );
+        ));
 
         return $with_tax;
     }
@@ -550,7 +562,7 @@ class Theme_Helper {
         $tax_query          =  self::get_tax_query( $post_type, $post_categories );
         if( $tax_query )
             $args['tax_query'][] = $tax_query;
-        print_r( $args );
+        // print_r( $args );
         
         return $args;
     }
@@ -560,18 +572,83 @@ class Theme_Helper {
     }
 }
 
-// function Child_Customizer_Class(){	
+function Child_Customizer_Class(){	
 
-//     if ( class_exists( "Habakiri_Customizer_Framework" ) ){
-
-//         $child_customizer = new Theme_Helper;
+ 
+        $child_customizer = new Theme_Helper;
     
-//         add_action( 'customize_register', array( $child_customizer, 'customize_register') );
-//         add_action( 'init', array( $child_customizer, 'custom_post_type') );
-//         add_action( 'customize_controls_print_footer_scripts', array( $child_customizer, 'customizer_js') );
-//     }
+        add_action( 'customize_register', array( $child_customizer, 'customize_register') );
+        add_action( 'init', array( $child_customizer, 'custom_post_type') );
+        add_action( 'customize_controls_print_footer_scripts', array( $child_customizer, 'customizer_js') );
 
-// }
-// add_action("after_setup_theme","Child_Customizer_Class");
+        add_filter('custom_blog_form',function($blockForm){
+            $blockForm = array(
+                array('main_title'=>'text','post_type'=>'select',
+                    // 'post_categories'=>'select',
+                    'post_order'=>'select',
+                    'post_orderby'=>'select','post_limit'=> 'number'
+                ),
+                array('main_title'=>'text','main_description'=>'textarea',
+                     'item_image' => 'image',
+                     'item_description'=>'textarea','item_loop'=>2,
+                    'loop_items'=>array('item_description') 
+                ),
+                array('main_title'=>'text',
+                     'main_description'=>'textarea',
+                     'gallery_item' => 'image',
+                     'item_loop'=>6,
+                     'loop_items'=>array('gallery_item') 
+                ),
+                array('main_title'=>'text',
+                     'main_description'=>'textarea',
+                     'office_hour_title' => 'text',
+                     'office_hour_description' => 'textarea',
+                     'hide_name' => 'check',
+                     'full_name' => 'text',
+                     'hide_email' => 'check',
+                     'email' => 'email',
+                     'hide_phone_number' => 'check',
+                     'phone_number' => 'text',                      
+                     'hide_person' => 'check',
+                     'select_person' => 'select',                      
+                     'hide_date' => 'check',
+                     'date' => 'text',                      
+                     'hide_message' => 'check',
+                     'message' => 'textarea',   
+                     'button_text'   => 'text'                   
+                ),
+ 
+            );
+            return $blockForm;
+        },10,1);
+
+        // add_filter('home_blocks_length',function($length){
+        //     $new_length = 3;
+        //     return $new_length;
+        // },10,1);
+
+        add_filter('post_type_name',function($name){
+            $new_name = "Our Menu";
+            return $new_name;
+        },10,1);
+
+        add_filter('custom_post_type_tax',function($ary){
+            $new_ary = array(
+                'post_name'     => "Our Menu",
+                'post_slug'     => "our-menu",
+                'tax_name'      =>'our_menu',
+            );
+            return $new_ary;
+        },10,1);
+
+        add_filter('custom_cat_name',function($name){
+            $new_name = "Menu Items";
+            return $new_name;
+        },10,1);
+
+    
+
+}
+add_action("after_setup_theme","Child_Customizer_Class");
 
  
