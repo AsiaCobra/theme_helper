@@ -1,15 +1,10 @@
 <?php
-if ( class_exists( "Habakiri_Customizer_Framework" ) ){
-    require('habakiri-customizer-framework.php');
-}
 class Theme_Helper {
-
 	/**
 	 * Default theme options
 	 * @var array
 	 */
     protected static $defaults = array();
-    protected $remove_field = array();
 
     /**
 	 * @var Habakiri_Customizer_Framework
@@ -18,12 +13,32 @@ class Theme_Helper {
     protected $Customizer_Framework;
 
     protected static $home_blocks = null;
+    protected static $store_data = array();
 
     function __construct(){
 
-        // $this->wp_customize = $wp_customize;
-        $this->Customizer_Framework = new Habakiri_Customizer_Framework();
-        // add_action('customize_register', array( $this, 'set_customize_register') );
+         $this->Customizer_Framework = new Habakiri_Customizer_Framework();
+        
+        /**
+         * Setting Default Value
+         */
+        $defaults_Ary = array(
+            'options_phone'               =>  ' Call us: 1234 5678 90 ',
+            'options_phone_number'        =>  ' 1234 5678 90 ',
+            'options_email'               =>  ' Contact us: your@email.com ',
+            'options_receiver_email'      =>  ' your@email.com ',
+            'options_address'             =>  ' 21,Yangon ',
+            'options_map'                 =>  ' <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3819.377239357319!2d96.13038866404035!3d16.807631414343525!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30c1eb380d04ccff%3A0x9a4f4f9119daa179!2zMTbCsDQ4JzI4LjUiTiA5NsKwMDcnNTEuNSJF!5e0!3m2!1sja!2sjp!4v1541737607907" 
+                                                width="400" height="300" frameborder="0" style="border:0" allowfullscreen=""></iframe> ',
+        
+        );          
+        /**
+         * Set WP_filter 
+         */
+        self::$defaults = apply_filters(
+                'theme_helper_defaults',
+                $defaults_Ary,
+        );
     }
 
 	/**
@@ -34,35 +49,30 @@ class Theme_Helper {
 	 */
     public static function get_default( $key ){
 
-        $defaults_Ary = array(
-            'options_phone'               =>  ' Call us: 1234 5678 90 ',
-            'options_phone_number'        =>  ' 1234 5678 90 ',
-            'options_email'               =>  ' Contact us: your@email.com ',
-            'options_receiver_email'      =>  ' your@email.com ',
-            'options_address'             =>  ' 21,Yangon ',
-            'options_map'                 =>  ' <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3819.377239357319!2d96.13038866404035!3d16.807631414343525!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30c1eb380d04ccff%3A0x9a4f4f9119daa179!2zMTbCsDQ4JzI4LjUiTiA5NsKwMDcnNTEuNSJF!5e0!3m2!1sja!2sjp!4v1541737607907" 
-                                                width="400" height="300" frameborder="0" style="border:0" allowfullscreen=""></iframe> ',
-        
-            );
-        
-        for( $i = 1; $i <= self::$home_blocks; $i++ ) {
-
-            $home_block_id = "home_block_$i";
-            $defaults_Ary[$home_block_id] = false;
-        }
-
-        self::$defaults = apply_filters(
-                'child_theme_mod_defaults',
-                $defaults_Ary,
-            );
-
-        if( isset( self::$defaults[$key] ) ) {
-
+        if( isset( self::$defaults[$key] )) { 
             return self::$defaults[$key];
         }
 
     }
+    /**
+     * Rreturn Default Field
+     * @return array
+     */
 
+    public static function get_data(){
+        return self::$defaults;
+    }
+	/**
+	 * Return the theme option
+	 *
+	 * @param string $key
+	 * @return null|string
+	 */
+	public static function get( $key ) {
+		$default   = Theme_Helper::get_default( $key );
+		$theme_mod = get_theme_mod( $key, $default );
+		return $theme_mod;
+	}
 
     /**
 	 * Set the original item on the theme customizer
@@ -75,49 +85,52 @@ class Theme_Helper {
 
         $this->Customizer_Framework->register_customizer( $wp_customize );
 
-            //Start Parent Theme Slider Modify 
-            for ( $i = 1; $i <= 5; $i ++ ) {
-                $section_id = 'habakiri_slider_image_' . $i;
-
-                $this->Customizer_Framework->text( 'slider_title' . $i, array(
-                    'label'         => __( " Heading ", 'habakiri' ),
-                    'default'       => __( "Welcome To </b> Japan </b>",'habakiri' ),
-                    'section'       => $section_id
-                ) );
-
-                for ( $b = 1; $b <= 2; $b++){
-                    $default = $b == 1 ? "Book Now" : " Take a Tour ";
-                    $this->Customizer_Framework->text( "slider_btn_text_${b}_" . $i, array(
-                        'label'         => __( " Button Text $b", 'habakiri' ),
-                        'default'       => __( " $default ", 'habakiri'  ),
-                        'section'       => $section_id,
-                        'priority'      =>11,
+            // if( class_exists(Habakiri) ){
+                //Start Parent Theme Slider Modify 
+                for ( $i = 1; $i <= 5; $i ++ ) {
+                    $section_id = 'habakiri_slider_image_' . $i;
+    
+                    $this->Customizer_Framework->text( 'slider_title' . $i, array(
+                        'label'         => __( " Heading ", 'habakiri' ),
+                        'default'       => __( "Welcome To </b> Japan </b>",'habakiri' ),
+                        'section'       => $section_id
                     ) );
-                }
-
-                $this->Customizer_Framework->url( 'slider_url_two' . $i, array( 
-                    'label'         => __( " URL  ", 'habakiri' ),
-                    'default'       => __( " # ", 'habakiri' ),
-                    'section'       => $section_id,
-                    'priority'      => 12,
-                ) );
+    
+                    for ( $b = 1; $b <= 2; $b++){
+                        $default = $b == 1 ? "Book Now" : " Take a Tour ";
+                        $this->Customizer_Framework->text( "slider_btn_text_${b}_" . $i, array(
+                            'label'         => __( " Button Text $b", 'habakiri' ),
+                            'default'       => __( " $default ", 'habakiri'  ),
+                            'section'       => $section_id,
+                            'priority'      =>11,
+                        ) );
+                    }
+    
+                    $this->Customizer_Framework->url( 'slider_url_two' . $i, array( 
+                        'label'         => __( " URL  ", 'habakiri' ),
+                        'default'       => __( " # ", 'habakiri' ),
+                        'section'       => $section_id,
+                        'priority'      => 12,
+                    ) );
+                    
                 
-            
-            }
-            //End Parent Theme Slider Modify
+                }
+                //End Parent Theme Slider Modify
+            // }
 
             //Start Theme Options
             $panel_id = "child_theme_options"; 
+
             $this->Customizer_Framework->add_panel( $panel_id, array(
                 'title'         => __( " Theme Options ", ' habakiri ' ),
-                'priority'      =>110,
+                'priority'      =>110
             ) );
             
             // Contact & Social in Theme Options 
             $info_social_section_id = "options_info_social";
             $this->Customizer_Framework->add_section( $info_social_section_id, array(
                 'title'         => __( " Contact & Social ", 'habakiri' ),
-                'panel'         => $panel_id,
+                'panel'         => $panel_id
             ) );
 
             // options_phone
@@ -134,45 +147,51 @@ class Theme_Helper {
             // options_tripadvisor
             
             
-            $this->Customizer_Framework->text( 'options_phone', array(
-                'label'         => __( " Phone ",'habakiri' ),
-                'default'        => self::get_default('options_phone'),
-                'section'       => $info_social_section_id,
-                // 'settings'      =>'options_phone',
-            ) );
+            // $this->Customizer_Framework->text( 'options_phone', array(
+            //     'label'         => __( " Phone ",'habakiri' ),
+            //     'default'        => self::get_default('options_phone'),
+            //     'section'       => $info_social_section_id,
+            //     // 'settings'      =>'options_phone',
+            // ) );
 
-            $this->Customizer_Framework->text( 'options_phone_number', array(
-                'label'         => __( " Phone Number ",'habakiri' ),
-                'default'        => self::get_default('options_phone_number'),
-                'section'       => $info_social_section_id,
-            ) );
+            // $this->Customizer_Framework->text( 'options_phone_number', array(
+            //     'label'         => __( " Phone Number ",'habakiri' ),
+            //     'default'        => self::get_default('options_phone_number'),
+            //     'section'       => $info_social_section_id,
+            // ) );
 
             
-            $this->Customizer_Framework->text( 'options_email', array(
-                'label'         => __( " Email ",'habakiri' ),
-                'default'        => self::get_default('options_email'),
-                'section'       => $info_social_section_id,
-                ) );
+            // $this->Customizer_Framework->text( 'options_email', array(
+            //     'label'         => __( " Email ",'habakiri' ),
+            //     'default'        => self::get_default('options_email'),
+            //     'section'       => $info_social_section_id,
+            //     ) );
                 
-            $this->Customizer_Framework->text( 'options_receiver_email', array(
-                'label'         => __( " Receiver Email ",'habakiri' ),
-                'default'        => self::get_default('options_receiver_email'),
-                'section'       => $info_social_section_id,
-            ) );
+            // $this->Customizer_Framework->text( 'options_receiver_email', array(
+            //     'label'         => __( " Receiver Email ",'habakiri' ),
+            //     'default'        => self::get_default('options_receiver_email'),
+            //     'section'       => $info_social_section_id,
+            // ) );
                 
-            $this->Customizer_Framework->textarea( 'options_address', array(
-                'label'         => __( " Address ",'habakiri' ),
-                'default'        => self::get_default('options_address'),
-                'section'       => $info_social_section_id,
-            ) );
+            // $this->Customizer_Framework->textarea( 'options_address', array(
+            //     'label'         => __( " Address ",'habakiri' ),
+            //     'default'        => self::get_default('options_address'),
+            //     'section'       => $info_social_section_id,
+            // ) );
                 
-            $this->Customizer_Framework->textarea( 'options_map', array(
-                'label'         => __( " Google Map ",'habakiri' ),
-                'default'        => self::get_default('options_map'),
-                'section'       => $info_social_section_id,
-            ) );
+            // $this->Customizer_Framework->textarea( 'options_map', array(
+            //     'label'         => __( " Google Map ",'habakiri' ),
+            //     'default'        => self::get_default('options_map'),
+            //     'section'       => $info_social_section_id,
+            // ) );
 
-            $social = array(
+            $options = array(                
+                'options_phone',
+                'options_phone_number',
+                'options_email',
+                'options_receiver_email',
+                'options_address',
+                'options_map',
                 'options_facebook',
                 'options_twitter',
                 'options_linkedin',
@@ -180,18 +199,22 @@ class Theme_Helper {
                 'options_instagram',
                 'options_youtube',
                 'options_pinterest',
-                'options_tripadvisor',
+                'options_tripadvisor'
             );
 
-            foreach ( $social as $key=>$control_id ){
+            foreach ( $options as $key=>$control_id ){
 
-                $label = ucfirst( str_replace( "options_", "",$control_id ) );
-
-                $this->Customizer_Framework->text( $control_id, array(
+                // $label = ucfirst( str_replace( "_", "",$control_id ) );
+                // $label = str_replace("Options",'',$label);
+                $type =  'text';
+                if( $control_id === "options_address" || $control_id === "options_map" )
+                    $type = "textarea";
+                $field_Ary = array(
                     'label'     => __( $label, ' habakiri ' ),
-                    'default'   => "#",
-                    'section'   => $info_social_section_id
-                ) );
+                    'default'   => self::get_default($control_id)
+                 ) ;
+                $this->check_type($type, $control_id,$info_social_section_id,$field_Ary );
+                // $this->Customizer_Framework->text( $control_id, $field_Ary);
             }
         //End Theme Options
 
@@ -210,13 +233,14 @@ class Theme_Helper {
 
             );
             $blockForm = apply_filters('custom_blog_form',$create_blog_form);
+            /**
+             * Assigning Home Block length From @$blockForm
+             */
+            $block_length = sizeof($blockForm);
 
-            $blocks = sizeof($blockForm);
-            // self::$home_blocks = sizeof($blockForm);
-            // $blocks = apply_filters('home_block_length',self::$home_blocks);
 
             $tmp_index = 0;
-            for ( $i = 0; $i < $blocks; $i++ ) {
+            for ( $i = 0; $i < $block_length; $i++ ) {
                 $tmp_index++;
                 $section_id = "home_block_control_$tmp_index";
                 $home_block_id = "home_block_$tmp_index";
@@ -234,6 +258,10 @@ class Theme_Helper {
                     'label'     => __( " Hide  Home Block $tmp_index ", 'habakiri' ),
                     'section'   => $section_id
                 ) );
+                /**
+                 * Adding to Default Ary
+                 */
+                self::$defaults[$tmp_index] = array($home_block_id=>self::get($home_block_id));
 
                 if( $blockForm[$i] ){
 
@@ -351,12 +379,20 @@ class Theme_Helper {
 			)
 		);
     }
+    public function assign_defaults( $key, $val ){
+        // add_filter('theme_helper_defaults',function($ary){
+        //     if( is_array($ary[$key]) ){
+        //         $ary[$key] = $val;
+        //     }
+        // });
+    }
+    /** 
+    * Get custom post name , slug ,tax 
+    * @param Tour_name $name
+    * @return array count 3
+    */
     public function custom_post_type(){
-        /** 
-        * Get custom post name , slug ,tax 
-        * @param Tour_name $name
-        * @return array count 3
-        */
+
         $post_name = self::get_custom_post_with_tax( 'Tours' );
 
          // Set UI labels for Custom Post Type
@@ -575,8 +611,10 @@ class Theme_Helper {
 function Child_Customizer_Class(){	
 
  
+        if ( !class_exists( "Habakiri_Customizer_Framework" ) ){
+            require('habakiri-customizer-framework.php');
+        }
         $child_customizer = new Theme_Helper;
-    
         add_action( 'customize_register', array( $child_customizer, 'customize_register') );
         add_action( 'init', array( $child_customizer, 'custom_post_type') );
         add_action( 'customize_controls_print_footer_scripts', array( $child_customizer, 'customizer_js') );
